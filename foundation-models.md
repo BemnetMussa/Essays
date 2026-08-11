@@ -1,53 +1,36 @@
 # What Are Foundation Models?
 
-*Tired of reading?* Open **[Listen (browser TTS)](./foundation-models-listen.html)** — press Play.
-
 ![Bridge metaphor](images/foundation-bridge-metaphor.jpg)
 
 *The apps are the road. The foundation model is what holds them up.*
 
-If you use ChatGPT, Claude, Gemini, a coding copilot, or an image generator, you are already sitting on foundation models. This note keeps the real definitions and the technical ideas — written so they land on the first read. Three questions: what is a foundation model, why do they still differ if they “train the same way,” and how do you tell which is which.
+ChatGPT, Claude, Gemini, coding copilots, and image generators all sit on the same kind of system. People call those systems **foundation models**, yet the phrase is often used loosely — as if every neural network trained from scratch counted. This essay argues one claim: **a foundation model is a model trained on broad data with self-supervision at scale and then adapted to many downstream tasks; models still differ mainly through data mix, post-training, scale, and evaluation — so you tell them apart by matching the job to the right benchmark, not by chasing a single overall winner.** What follows defines the term formally, explains how these models are trained and why pretraining is expensive, shows why they diverge despite a shared recipe, and shows how to read benchmarks as evidence.
 
-Here is the formal definition from Stanford’s Center for Research on Foundation Models (CRFM), 2021:
+An academic account has to start with the definition, not the brand names. Stanford’s Center for Research on Foundation Models (CRFM) coined the term in 2021 and defined it this way:
 
 > A foundation model is any model that is trained on broad data (generally using self-supervision at scale) that can be adapted (e.g., fine-tuned) to a wide range of downstream tasks.[1](https://arxiv.org/abs/2108.07258)
 
-In plain language: train one big model on a huge, mixed pile of data; then reuse that same model for many different jobs — chat, code, search, images, tools. NVIDIA’s explainer says the same thing: a neural network trained on mountains of raw data that can be steered to a wide range of tasks.[2](https://blogs.nvidia.com/blog/what-are-foundation-models/) Older machine learning was usually the opposite — one small model for one labeled job. Foundation models flip that: general base first, specialize later.[3](https://www.ibm.com/think/topics/foundation-models)
+That sentence has three load-bearing parts. **Broad data** means the training mix is general, not a single labeled job. **Self-supervision at scale** means the model mostly learns by predicting missing pieces of raw data rather than from hand-labeled examples. **Adapted to a wide range of downstream tasks** means the same base is reused — via fine-tuning, prompting, or related methods — for many jobs after pretraining. Industry explainers match this picture: NVIDIA describes a neural network trained on mountains of raw data that can be steered to many tasks;[2](https://blogs.nvidia.com/blog/what-are-foundation-models/) IBM contrasts older one-job models with large general models specialized later.[3](https://www.ibm.com/think/topics/foundation-models) CRFM chose “foundation” to stress two properties at once: the model is **central** (many products stand on it) and **incomplete** (it is not the finished product until adapted).[1](https://arxiv.org/abs/2108.07258)
 
-They called it “foundation” on purpose. It is **central** — many products stand on it — and **incomplete** — it is not the finished product until you adapt it.[1](https://arxiv.org/abs/2108.07258)
+Two further CRFM ideas explain why the category matters. **Emergence** means that at scale, models show useful behaviors nobody programmed line by line — for example, attempting a new task from a natural-language prompt. **Homogenization** means many teams converge on the same few bases and methods. Homogenization amortizes effort; it also creates a shared failure mode: if the foundation is biased or brittle, every adapted system inherits the crack.[1](https://arxiv.org/abs/2108.07258)
 
-CRFM summarized the stakes in two words. **Emergence:** at scale, models show useful behaviors nobody programmed line by line (for example, doing a new task from a prompt). **Homogenization:** many teams converge on the same few base models and methods. That reuse amortizes effort. It also creates a shared crack: if the foundation is biased or brittle, every adapted system inherits the problem.[1](https://arxiv.org/abs/2108.07258)
+The training method behind most foundations is **self-supervised learning**. Instead of labeling every example, you force the model to predict a missing piece of the data itself. For text, that is often next-word or masked-word prediction (“The cat sat on the ___”). Enough of those predictions, on a large enough corpus, and the model absorbs language structure and a large amount of world-shaped pattern. Images and code use the same spirit — reconstruct a patch, predict the next tokens. The expensive stage that builds the general base is **pretraining**. Almost everyone else then does **adaptation**: prompting; retrieval-augmented generation (RAG), which fetches documents and conditions the answer on them;[10](https://arxiv.org/abs/2005.11401) full fine-tuning; parameter-efficient methods such as LoRA (train a small add-on instead of every weight);[11](https://arxiv.org/abs/2106.09685) and alignment or preference training. In short, transfer learning at industrial scale: you usually stand on a foundation rather than rebuild one.
 
-The usual training method is **self-supervised learning** (CRFM often says self-supervision at scale). You do not hand-label every example. You make the model predict a missing piece of the raw data itself. For text, that is often next-word or masked-word prediction: “The cat sat on the ___.” Nobody labeled “mat.” Do this across a huge corpus and the model absorbs language structure and a lot of world-shaped patterns. Images and code use the same spirit — reconstruct a patch, predict the next tokens.
-
-That huge practice run is **pretraining**: build the general base. Almost everyone else does **adaptation** — prompting, retrieval-augmented generation (RAG: fetch documents, then answer with them),[10](https://arxiv.org/abs/2005.11401) fine-tuning, parameter-efficient methods like LoRA (train a small add-on instead of every weight),[11](https://arxiv.org/abs/2106.09685) and alignment / preference training. Transfer learning at industrial scale. You usually do not rebuild the foundation. You stand on it.
-
-![Pretrain once. Adapt for a real job.](images/foundation-pretrain-finetune.svg)
+![Pretrain once for generality. Adapt for a real job.](images/foundation-pretrain-finetune.svg)
 
 *Pretrain once for generality. Adapt for a real job.*
 
-A short technical spine: the **transformer** architecture (Vaswani et al., 2017 — *Attention Is All You Need*) made attention-based networks scale.[4](https://arxiv.org/abs/1706.03762) **BERT** (2018) made “one pretrained language model, many fine-tunes” normal.[5](https://arxiv.org/abs/1810.04805) **GPT-3** (2020) showed few-shot prompting on a model with about **175 billion parameters** — parameters are the learned knobs (weights) inside the network.[6](https://arxiv.org/abs/2005.14165) ChatGPT and diffusion image models made the shift visible outside the lab. The Stanford AI Index counted **149** foundation models published in 2023 alone.[7](https://aiindex.stanford.edu/)
+A short technical spine supports that story with evidence. The **transformer** architecture (*Attention Is All You Need*, 2017) made attention-based networks scale.[4](https://arxiv.org/abs/1706.03762) **BERT** (2018) normalized “one pretrained language model, many fine-tunes.”[5](https://arxiv.org/abs/1810.04805) **GPT-3** (2020) showed few-shot prompting on a model with about **175 billion parameters** — parameters are the learned weights inside the network.[6](https://arxiv.org/abs/2005.14165) ChatGPT and diffusion-based image models then made the paradigm visible outside the lab. The Stanford AI Index counted **149** foundation models published in 2023 alone.[7](https://aiindex.stanford.edu/) An important clarification for precision: a large language model (LLM) is one *kind* of foundation model (language). Foundations also include speech systems (e.g. Whisper), image systems (e.g. diffusion / vision bases), and multimodal models. Same definition; different data and outputs.
 
-An LLM (large language model) is one kind of foundation model — language. Foundations also cover speech (e.g. Whisper), images (e.g. diffusion / vision bases), and multimodal systems that take more than one input type. Same definition; different data and output form.
+That history also explains the second body point: **why pretraining is said to need massive resources**. Building the base burns three fuels at once — **data** (internet-scale text, code, images, filtered and tokenized), **compute** (thousands of accelerators for weeks or months; often reported as training FLOPs, i.e. how much math the chips performed), and **people plus energy**. Using a chat product is not the same activity as pretraining GPT. Public dollar figures are estimates — labs rarely publish a full receipt — but the AI Index, working with Epoch AI, estimated cloud-rental compute for the training run alone: the original Transformer on the order of **~$900**; RoBERTa Large about **~$160,000**; GPT-4 about **~$78 million**; Gemini Ultra about **~$191 million**.[8](https://hai.stanford.edu/ai-index/2024-ai-index-report/research-and-development) Those numbers are not total R&D, yet they are enough to explain the industry split: a few organizations pretrain; almost everyone else adapts.
 
-Why does everyone say training needs massive resources? Because **pretraining the base** burns three fuels at once: **data** (internet-scale text, code, images — filtered and tokenized), **compute** (thousands of accelerators for weeks or months; often reported as training FLOPs — floating-point operations, i.e. how much math the chips did), and **people + energy**. Using a chat app is not the same as building GPT.
+![Training compute of notable models](images/foundation-ai-index-compute.jpeg)
 
-Public dollar figures are estimates — labs rarely publish a full receipt. The AI Index, with Epoch AI, estimated *cloud-rental compute for the training run*: original Transformer ~**$900**; RoBERTa Large ~**$160,000**; GPT-4 ~**$78 million**; Gemini Ultra ~**$191 million**.[8](https://hai.stanford.edu/ai-index/2024-ai-index-report/research-and-development) Not total R&D. Still enough to see why few organizations pretrain and almost everyone else adapts.
+*Training compute of notable models, 2012–23 (log scale). Epoch data via Stanford AI Index. Log scale means each step up is a large jump.*[7](https://aiindex.stanford.edu/)
 
-![Training compute chart](images/foundation-ai-index-compute.jpeg)
+If the high-level recipe is shared — broad data, self-supervision, then adaptation — **why do foundation models still differ?** For most chat models, the answer is not a secretly different brain. Most still use transformers. Architecture matters most when the *job type* changes (for example, text chat versus diffusion for images).[9](https://www.ibm.com/think/topics/diffusion-models) Within chat models, the main splits are: (1) **data mix** — how much code, math, dialogue, books, multilingual text, or images the model saw; (2) **post-training** — instruction tuning, preference / RLHF-style training, and domain fine-tunes that steer writing, coding, refusal, and reasoning; (3) **scale and training recipe** — parameter count, tokens seen, compute, and designs such as mixture-of-experts; and (4) **evaluation** — what you measure, because a model can lead on coding and lag on long-form writing. Major generations (for example GPT-3 to GPT-4 class) are usually new pretraining runs. Inside a generation, much of the product change is post-training on a related base.
 
-*Training compute of notable models, 2012–23 (log scale). Epoch data via Stanford AI Index. Log scale means each step up is a large jump, not a small bump.*[7](https://aiindex.stanford.edu/)
-
-So if the recipe sounds shared — broad data, self-supervision, then adapt — **why are foundation models different?**
-
-Most language foundations still share the transformer family. Architecture matters most when the *job type* changes: text-only chat versus diffusion for images, or multimodal stacks.[9](https://www.ibm.com/think/topics/diffusion-models) Within chat models, the big splits are usually:
-
-1. **Data mix** — how much code, math, dialogue, books, multilingual text, or images the model saw during pretraining (and continued training)  
-2. **Post-training** — instruction tuning, preference / RLHF-style training, domain fine-tunes; this steers how it writes, codes, refuses, and reasons  
-3. **Scale and training recipe** — parameter count, tokens seen, compute, designs such as mixture-of-experts  
-4. **Evaluation** — what you measure; a model can lead on coding and lag on long-form writing  
-
-That last point is how you read the market without drowning. A **benchmark** is a fixed test for a skill. A high score means “strong on *this* skill,” not “best foundation model overall.”
+The practical implication of that last split is how you **tell models apart without a fake overall ranking**. A **benchmark** is a fixed test of a skill. A high score means strong on *that* skill — not “best foundation model overall.” Evidence should be read that way:
 
 | If you care about… | Look at signals like… |
 | --- | --- |
@@ -58,15 +41,15 @@ That last point is how you read the market without drowning. A **benchmark** is 
 | Quality vs price vs speed | Artificial Analysis[15](https://artificialanalysis.ai/leaderboards/models) |
 | Open weights vs closed API | AI Index trends; Hugging Face hub[13](https://hai.stanford.edu/ai-index/2025-ai-index-report/technical-performance)[12](https://huggingface.co/models) |
 
-Worked example — how to read a chart. The 2025 AI Index reprints OpenAI’s comparison of GPT-4o, o1-preview, and o1. Do not start with “who won.” Start with the **panel title**: that is the skill under test.
+A concrete example makes the method clear. The 2025 AI Index reprints OpenAI’s comparison of GPT-4o, o1-preview, and o1. Do not begin with “who won.” Begin with each **panel title** — that is the skill under test.
 
-![Benchmark comparison](images/foundation-compare-by-benchmark.png)
+![GPT-4o vs o1 benchmarks](images/foundation-compare-by-benchmark.png)
 
 *GPT-4o vs o1-preview vs o1. Chart: 2025 AI Index (OpenAI, 2024).*[13](https://hai.stanford.edu/ai-index/2025-ai-index-report/technical-performance)
 
-**MMLU** (broad general knowledge): bars sit close (~88–92%). Look only there and they seem almost the same. **MATH**, **GPQA Diamond** (hard science), and **AIME 2024** (contest math): the gap opens. On AIME, GPT-4o is about **9%**; o1 about **74%**. Same lab, same era; the benchmark shows *which capability* moved. Habit for any leaderboard: name the skill first, then trust the ranking for that skill only.
+On **MMLU** (broad general knowledge), the bars sit close (~88–92%). Judged only there, the models look almost interchangeable. On **MATH**, **GPQA Diamond**, and **AIME 2024**, the gap opens; on AIME, GPT-4o is about **9%** while o1 is about **74%**. Same lab and era; different measured strengths. The habit to keep is: name the skill first, then trust the ranking for that skill only.
 
-Families you will keep meeting (versions change; roles stay recognizable):[2](https://blogs.nvidia.com/blog/what-are-foundation-models/)
+For orientation — not as a claim that any row is permanently “best” — these are families readers will keep meeting:[2](https://blogs.nvidia.com/blog/what-are-foundation-models/)
 
 | When | Family | Role |
 | --- | --- | --- |
@@ -77,13 +60,11 @@ Families you will keep meeting (versions change; roles stay recognizable):[2](ht
 | 2023– | **Llama**, **Mistral**, **Qwen**, **DeepSeek**… | Open-weight bases to deploy or fine-tune[12](https://huggingface.co/models) |
 | Also | Code models; **AlphaFold**, **SAM**, world models | Coding; science / vision / physical AI |
 
-Major generations (GPT-3 → GPT-4 class) are usually new pretraining runs — new data, compute, and recipe — not “keep training the old checkpoint forever.” Inside a generation, a lot of product change is **post-training** on a related base.
+None of this evidence licenses blind trust. Capability and failure arrive together. Models **hallucinate** (fluent but false), can amplify **bias** in training data, raise privacy and IP questions, and cost real energy. Because of homogenization, one cracked foundation can crack many products.[1](https://arxiv.org/abs/2108.07258) Grounding (for example RAG), filtering, red-teaming, and monitoring are therefore part of responsible use — not optional polish after the “real” work of picking a model name.
 
-Capability and failure arrive together. Models **hallucinate** (fluent but false), can amplify **bias** in the data, raise privacy and IP questions, and cost real energy. Homogenization means one cracked foundation can crack many products.[1](https://arxiv.org/abs/2108.07258) Grounding (e.g. RAG), filtering, red-teaming, and monitoring are part of using them — not optional polish.
+In conclusion, a foundation model — in the CRFM sense — is not “any model trained from scratch.” It is a model trained on broad data with self-supervision at scale and then adapted to many downstream tasks. That shared recipe explains both the power of the paradigm and the confusion around it. Models still differ because of data mix, post-training, scale and recipe, and what we choose to measure. The sound way to tell which is which is therefore evidence-based and task-relative: read the benchmark for the skill you need, then adapt. The implication for builders and readers is the same. Treat the foundation as a base layer, not the product; spend scarce resources on the right evaluation and on adaptation; and remember that when many systems stand on one floor, the quality of that floor is everyone’s problem.
 
-A foundation model is not the product. It is the base layer.
-
-**Formal idea, plain takeaway:** trained on broad data with self-supervision at scale, then adapted to many downstream tasks — same recipe, different data and post-training, different strengths. Pick by the job and the matching benchmark, then adapt.
+**Thesis, restated:** same formal idea; different data and tuning; different strengths — pick by the job and the matching benchmark, then adapt.
 
 ---
 
