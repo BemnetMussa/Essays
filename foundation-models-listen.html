@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Listen — What Are Foundation Models?</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --ink: #1a1a1a;
+      --muted: #555;
+      --accent: #0b5fff;
+      --card: #fffef9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      background: linear-gradient(160deg, #efe8dc 0%, #f7f4ef 45%, #e8eef8 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 2rem 1.25rem 4rem;
+    }
+    main {
+      max-width: 40rem;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid #ddd4c4;
+      border-radius: 12px;
+      padding: 1.5rem 1.4rem 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,.06);
+    }
+    h1 { font-size: 1.55rem; line-height: 1.25; margin: 0 0 .4rem; }
+    .sub { color: var(--muted); font-size: .95rem; margin: 0 0 1.25rem; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid #bbb;
+      background: #fff;
+      border-radius: 8px;
+      padding: .55rem 1rem;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    label { font-size: .9rem; color: var(--muted); }
+    select, input[type="range"] { vertical-align: middle; }
+    #status { font-size: .9rem; color: var(--muted); min-height: 1.2em; margin: .5rem 0 1rem; }
+    #script {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      font-size: 1.02rem;
+      border-top: 1px solid #e5dccb;
+      padding-top: 1rem;
+      max-height: 55vh;
+      overflow: auto;
+    }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>What Are Foundation Models?</h1>
+    <p class="sub">Browser text-to-speech — press Play. Works offline after load. Essay: <a href="https://github.com/BemnetMussa/Essays/blob/main/foundation-models.md">GitHub</a></p>
+
+    <div class="controls">
+      <button class="primary" id="play">Play</button>
+      <button id="pause">Pause</button>
+      <button id="stop">Stop</button>
+      <label>Voice <select id="voice"></select></label>
+      <label>Speed <input id="rate" type="range" min="0.7" max="1.4" step="0.05" value="1" /></label>
+    </div>
+    <div id="status">Ready.</div>
+    <div id="script"></div>
+  </main>
+
+  <script>
+    // Spoken script: essay body, cleaned for listening (no tables/notes dump).
+    const SCRIPT = `
+What Are Foundation Models?
+
+If you use ChatGPT, Claude, Gemini, a coding copilot, or an image generator, you are already sitting on foundation models. This note keeps the real definitions and the technical ideas — written so they land on the first read. Three questions: what is a foundation model, why do they still differ if they train the same way, and how do you tell which is which.
+
+Here is the formal definition from Stanford’s Center for Research on Foundation Models, C R F M, twenty twenty-one:
+
+A foundation model is any model that is trained on broad data — generally using self-supervision at scale — that can be adapted, for example fine-tuned, to a wide range of downstream tasks.
+
+In plain language: train one big model on a huge, mixed pile of data; then reuse that same model for many different jobs — chat, code, search, images, tools. Older machine learning was usually the opposite — one small model for one labeled job. Foundation models flip that: general base first, specialize later.
+
+They called it foundation on purpose. It is central — many products stand on it — and incomplete — it is not the finished product until you adapt it.
+
+C R F M summarized the stakes in two words. Emergence: at scale, models show useful behaviors nobody programmed line by line. Homogenization: many teams converge on the same few base models and methods. That reuse amortizes effort. It also creates a shared crack: if the foundation is biased or brittle, every adapted system inherits the problem.
+
+The usual training method is self-supervised learning. You do not hand-label every example. You make the model predict a missing piece of the raw data itself. For text, that is often next-word or masked-word prediction: The cat sat on the blank. Do this across a huge corpus and the model absorbs language structure and a lot of world-shaped patterns.
+
+That huge practice run is pretraining: build the general base. Almost everyone else does adaptation — prompting, retrieval-augmented generation or RAG, fine-tuning, parameter-efficient methods like Lo R A, and alignment or preference training. You usually do not rebuild the foundation. You stand on it.
+
+A short technical spine: the transformer architecture in twenty seventeen made attention-based networks scale. BERT in twenty eighteen made pretrain then fine-tune normal. G P T-3 in twenty twenty showed few-shot prompting on a model with about one hundred seventy-five billion parameters — the learned knobs inside the network. ChatGPT and diffusion image models made the shift visible outside the lab. The Stanford A I Index counted one hundred forty-nine foundation models published in twenty twenty-three alone.
+
+An L L M, or large language model, is one kind of foundation model — language. Foundations also cover speech, images, and multimodal systems.
+
+Why does everyone say training needs massive resources? Because pretraining the base burns three fuels at once: data, compute — often reported as training FLOPs, how much math the chips did — and people plus energy. Using a chat app is not the same as building G P T.
+
+Public dollar figures are estimates. The A I Index, with Epoch A I, estimated cloud-rental compute for the training run: original Transformer about nine hundred dollars; RoBERTa Large about one hundred sixty thousand; G P T-4 about seventy-eight million; Gemini Ultra about one hundred ninety-one million. Not total R and D. Still enough to see why few organizations pretrain and almost everyone else adapts.
+
+So if the recipe sounds shared — broad data, self-supervision, then adapt — why are foundation models different?
+
+Most language foundations still share the transformer family. Architecture matters most when the job type changes. Within chat models, the big splits are usually: data mix; post-training such as instruction tuning and preference training; scale and training recipe; and evaluation — what you measure.
+
+A benchmark is a fixed test for a skill. A high score means strong on this skill, not best foundation model overall. When you see a leaderboard, ask what skill it is testing.
+
+Worked example: the twenty twenty-five A I Index compares G P T-4o, o1-preview, and o1. Start with the panel title — that is the skill. On M M L U, general knowledge, the bars sit close. On hard math and science — MATH, G P Q A, A I M E — the gap opens. On A I M E, G P T-4o is about nine percent; o1 about seventy-four percent. Same lab, same era; the benchmark shows which capability moved.
+
+Families you will keep meeting: BERT, G P T-3, Stable Diffusion, Whisper, G P T, Claude, Gemini, Llama and peers, code models, and science models like AlphaFold.
+
+Major generations are usually new pretraining runs. Inside a generation, a lot of product change is post-training on a related base.
+
+Capability and failure arrive together. Models hallucinate — fluent but false — can amplify bias, raise privacy and I P questions, and cost real energy. Homogenization means one cracked foundation can crack many products.
+
+A foundation model is not the product. It is the base layer.
+
+Formal idea, plain takeaway: trained on broad data with self-supervision at scale, then adapted to many downstream tasks — same recipe, different data and post-training, different strengths. Pick by the job and the matching benchmark, then adapt.
+`.trim();
+
+    const scriptEl = document.getElementById("script");
+    const statusEl = document.getElementById("status");
+    const voiceSel = document.getElementById("voice");
+    const rateEl = document.getElementById("rate");
+    scriptEl.textContent = SCRIPT;
+
+    let voices = [];
+    let utter = null;
+
+    function loadVoices() {
+      voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith("en"));
+      if (!voices.length) voices = speechSynthesis.getVoices();
+      voiceSel.innerHTML = "";
+      voices.forEach((v, i) => {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = `${v.name} (${v.lang})`;
+        voiceSel.appendChild(opt);
+      });
+      const prefer = voices.findIndex(v => /English|en-US|en-GB/i.test(v.name + v.lang) && /Natural|Neural|Premium|Google|Microsoft/i.test(v.name));
+      if (prefer >= 0) voiceSel.value = prefer;
+    }
+    loadVoices();
+    speechSynthesis.onvoiceschanged = loadVoices;
+
+    function setStatus(t) { statusEl.textContent = t; }
+
+    document.getElementById("play").onclick = () => {
+      if (!("speechSynthesis" in window)) {
+        setStatus("This browser has no speechSynthesis.");
+        return;
+      }
+      if (speechSynthesis.paused) {
+        speechSynthesis.resume();
+        setStatus("Playing…");
+        return;
+      }
+      speechSynthesis.cancel();
+      utter = new SpeechSynthesisUtterance(SCRIPT);
+      const v = voices[Number(voiceSel.value)];
+      if (v) utter.voice = v;
+      utter.rate = Number(rateEl.value);
+      utter.onstart = () => setStatus("Playing…");
+      utter.onend = () => setStatus("Done.");
+      utter.onerror = (e) => setStatus("Error: " + (e.error || "speech failed"));
+      speechSynthesis.speak(utter);
+    };
+    document.getElementById("pause").onclick = () => {
+      if (speechSynthesis.speaking && !speechSynthesis.paused) {
+        speechSynthesis.pause();
+        setStatus("Paused.");
+      }
+    };
+    document.getElementById("stop").onclick = () => {
+      speechSynthesis.cancel();
+      setStatus("Stopped.");
+    };
+  </script>
+</body>
+</html>
