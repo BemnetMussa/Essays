@@ -1,6 +1,8 @@
 # What Are Foundation Models?
 
-![Bridge metaphor: apps are the road; the foundation model holds them up](images/foundation-bridge-metaphor.jpg)
+*Tired of reading?* Open **[Listen (browser TTS)](./foundation-models-listen.html)** — press Play.
+
+![Bridge metaphor](images/foundation-bridge-metaphor.jpg)
 
 *The apps are the road. The foundation model is what holds them up.*
 
@@ -20,7 +22,7 @@ The usual training method is **self-supervised learning** (CRFM often says self-
 
 That huge practice run is **pretraining**: build the general base. Almost everyone else does **adaptation** — prompting, retrieval-augmented generation (RAG: fetch documents, then answer with them),[10](https://arxiv.org/abs/2005.11401) fine-tuning, parameter-efficient methods like LoRA (train a small add-on instead of every weight),[11](https://arxiv.org/abs/2106.09685) and alignment / preference training. Transfer learning at industrial scale. You usually do not rebuild the foundation. You stand on it.
 
-![Pretrain once for generality. Adapt for a real job.](images/foundation-pretrain-finetune.svg)
+![Pretrain once. Adapt for a real job.](images/foundation-pretrain-finetune.svg)
 
 *Pretrain once for generality. Adapt for a real job.*
 
@@ -32,7 +34,7 @@ Why does everyone say training needs massive resources? Because **pretraining th
 
 Public dollar figures are estimates — labs rarely publish a full receipt. The AI Index, with Epoch AI, estimated *cloud-rental compute for the training run*: original Transformer ~**$900**; RoBERTa Large ~**$160,000**; GPT-4 ~**$78 million**; Gemini Ultra ~**$191 million**.[8](https://hai.stanford.edu/ai-index/2024-ai-index-report/research-and-development) Not total R&D. Still enough to see why few organizations pretrain and almost everyone else adapts.
 
-![Training compute of notable models, 2012–23 (log scale)](images/foundation-ai-index-compute.jpeg)
+![Training compute chart](images/foundation-ai-index-compute.jpeg)
 
 *Training compute of notable models, 2012–23 (log scale). Epoch data via Stanford AI Index. Log scale means each step up is a large jump, not a small bump.*[7](https://aiindex.stanford.edu/)
 
@@ -58,7 +60,7 @@ That last point is how you read the market without drowning. A **benchmark** is 
 
 Worked example — how to read a chart. The 2025 AI Index reprints OpenAI’s comparison of GPT-4o, o1-preview, and o1. Do not start with “who won.” Start with the **panel title**: that is the skill under test.
 
-![GPT-4o vs o1-preview vs o1 on select benchmarks](images/foundation-compare-by-benchmark.png)
+![Benchmark comparison](images/foundation-compare-by-benchmark.png)
 
 *GPT-4o vs o1-preview vs o1. Chart: 2025 AI Index (OpenAI, 2024).*[13](https://hai.stanford.edu/ai-index/2025-ai-index-report/technical-performance)
 
