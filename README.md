@@ -4,4 +4,4 @@ Public essays by [Bemnet Mussa](https://github.com/BemnetMussa).
 
 ## Essays
 
-- [What Are Foundation Models?](./foundation-models.md)
+- [What Are Foundation Models?](./foundation-models.md) — [Listen](./foundation-models-listen.html)
