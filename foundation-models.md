@@ -4,95 +4,97 @@
 
 *The apps are the road. The foundation model is what holds them up.*
 
-ChatGPT, Claude, Gemini, coding copilots, image tools — those all sit on **foundation models**. This note is a simple map: what that means, why two models can “train the same way” and still feel different, and how to tell which is which.
+If you use ChatGPT, Claude, Gemini, a coding copilot, or an image generator, you are already sitting on foundation models. This note keeps the real definitions and the technical ideas — written so they land on the first read. Three questions: what is a foundation model, why do they still differ if they “train the same way,” and how do you tell which is which.
 
-**A foundation model is a big AI model trained once on a huge, mixed pile of data, then reused for many jobs.** Write. Code. Answer. Look at images. Talk to tools. Same base, different uses later.[1](https://arxiv.org/abs/2108.07258)[2](https://blogs.nvidia.com/blog/what-are-foundation-models/)
+Here is the formal definition from Stanford’s Center for Research on Foundation Models (CRFM), 2021:
 
-Old machine learning was usually the opposite: one small model for one job. Foundation models flip that — train a general base, then specialize.[3](https://www.ibm.com/think/topics/foundation-models)
+> A foundation model is any model that is trained on broad data (generally using self-supervision at scale) that can be adapted (e.g., fine-tuned) to a wide range of downstream tasks.[1](https://arxiv.org/abs/2108.07258)
 
-Stanford researchers coined “foundation” in 2021 on purpose. It is the floor many products stand on. It is not the finished product. You still have to adapt it.[1](https://arxiv.org/abs/2108.07258)
+In plain language: train one big model on a huge, mixed pile of data; then reuse that same model for many different jobs — chat, code, search, images, tools. NVIDIA’s explainer says the same thing: a neural network trained on mountains of raw data that can be steered to a wide range of tasks.[2](https://blogs.nvidia.com/blog/what-are-foundation-models/) Older machine learning was usually the opposite — one small model for one labeled job. Foundation models flip that: general base first, specialize later.[3](https://www.ibm.com/think/topics/foundation-models)
 
-Two side effects matter. At scale, models pick up skills nobody listed by hand (**emergence**). And many companies end up using the same few bases (**homogenization**). Reuse is powerful. It is also risky: if the base is wrong, every app on top inherits the crack.[1](https://arxiv.org/abs/2108.07258)
+They called it “foundation” on purpose. It is **central** — many products stand on it — and **incomplete** — it is not the finished product until you adapt it.[1](https://arxiv.org/abs/2108.07258)
 
-How do they learn without a human labeling every example? Mostly **self-supervised learning**. For text, the model practices fill-in-the-blank: “The cat sat on the ___.” Do that enough times on enough text, and it absorbs language and patterns. Images and code use the same idea — predict a missing piece.
+CRFM summarized the stakes in two words. **Emergence:** at scale, models show useful behaviors nobody programmed line by line (for example, doing a new task from a prompt). **Homogenization:** many teams converge on the same few base models and methods. That reuse amortizes effort. It also creates a shared crack: if the foundation is biased or brittle, every adapted system inherits the problem.[1](https://arxiv.org/abs/2108.07258)
 
-That practice at huge scale is **pretraining**. It is rare and expensive. Almost everyone else does the cheaper step: **adapt** the base with prompts, retrieval (RAG), fine-tuning, or small add-ons like LoRA. You usually do not rebuild the foundation. You stand on it.
+The usual training method is **self-supervised learning** (CRFM often says self-supervision at scale). You do not hand-label every example. You make the model predict a missing piece of the raw data itself. For text, that is often next-word or masked-word prediction: “The cat sat on the ___.” Nobody labeled “mat.” Do this across a huge corpus and the model absorbs language structure and a lot of world-shaped patterns. Images and code use the same spirit — reconstruct a patch, predict the next tokens.
 
-![Pretrain once. Adapt for the real job.](images/foundation-pretrain-finetune.svg)
+That huge practice run is **pretraining**: build the general base. Almost everyone else does **adaptation** — prompting, retrieval-augmented generation (RAG: fetch documents, then answer with them),[10](https://arxiv.org/abs/2005.11401) fine-tuning, parameter-efficient methods like LoRA (train a small add-on instead of every weight),[11](https://arxiv.org/abs/2106.09685) and alignment / preference training. Transfer learning at industrial scale. You usually do not rebuild the foundation. You stand on it.
 
-*Pretrain once. Adapt for the real job.*
+![Pretrain once for generality. Adapt for a real job.](images/foundation-pretrain-finetune.svg)
 
-A short history: transformers (2017) made this scale.[4](https://arxiv.org/abs/1706.03762) BERT (2018) made “pretrain, then fine-tune” normal.[5](https://arxiv.org/abs/1810.04805) GPT-3 (2020) showed a huge model could do many jobs from a prompt — about **175 billion** knobs (parameters) in that paper.[6](https://arxiv.org/abs/2005.14165) Then ChatGPT made it mainstream. In 2023 alone, the Stanford AI Index counted **149** new foundation models.[7](https://aiindex.stanford.edu/)
+*Pretrain once for generality. Adapt for a real job.*
 
-Why the “needs massive resources” talk? Because **building** the base burns three things at once: huge data, huge computer time (thousands of GPUs for weeks or months), and real teams plus electricity. Using ChatGPT is cheap by comparison. Pretraining is not.
+A short technical spine: the **transformer** architecture (Vaswani et al., 2017 — *Attention Is All You Need*) made attention-based networks scale.[4](https://arxiv.org/abs/1706.03762) **BERT** (2018) made “one pretrained language model, many fine-tunes” normal.[5](https://arxiv.org/abs/1810.04805) **GPT-3** (2020) showed few-shot prompting on a model with about **175 billion parameters** — parameters are the learned knobs (weights) inside the network.[6](https://arxiv.org/abs/2005.14165) ChatGPT and diffusion image models made the shift visible outside the lab. The Stanford AI Index counted **149** foundation models published in 2023 alone.[7](https://aiindex.stanford.edu/)
 
-Public dollar numbers are estimates (labs rarely publish a full bill). The AI Index, with Epoch AI, estimated cloud-rental **compute for the training run**: original Transformer ~**$900**; RoBERTa Large ~**$160,000**; GPT-4 ~**$78 million**; Gemini Ultra ~**$191 million**.[8](https://hai.stanford.edu/ai-index/2024-ai-index-report/research-and-development) That is not total company R&D. It is still enough to see the jump.
+An LLM (large language model) is one kind of foundation model — language. Foundations also cover speech (e.g. Whisper), images (e.g. diffusion / vision bases), and multimodal systems that take more than one input type. Same definition; different data and output form.
+
+Why does everyone say training needs massive resources? Because **pretraining the base** burns three fuels at once: **data** (internet-scale text, code, images — filtered and tokenized), **compute** (thousands of accelerators for weeks or months; often reported as training FLOPs — floating-point operations, i.e. how much math the chips did), and **people + energy**. Using a chat app is not the same as building GPT.
+
+Public dollar figures are estimates — labs rarely publish a full receipt. The AI Index, with Epoch AI, estimated *cloud-rental compute for the training run*: original Transformer ~**$900**; RoBERTa Large ~**$160,000**; GPT-4 ~**$78 million**; Gemini Ultra ~**$191 million**.[8](https://hai.stanford.edu/ai-index/2024-ai-index-report/research-and-development) Not total R&D. Still enough to see why few organizations pretrain and almost everyone else adapts.
 
 ![Training compute of notable models, 2012–23 (log scale)](images/foundation-ai-index-compute.jpeg)
 
-*Training compute of notable models, 2012–23 (log scale). Each step up is a big jump. Chart: Stanford AI Index / Epoch.*[7](https://aiindex.stanford.edu/)
+*Training compute of notable models, 2012–23 (log scale). Epoch data via Stanford AI Index. Log scale means each step up is a large jump, not a small bump.*[7](https://aiindex.stanford.edu/)
 
-So the industry split is simple: a few labs pretrain. Almost everyone else adapts.
+So if the recipe sounds shared — broad data, self-supervision, then adapt — **why are foundation models different?**
 
-Then the natural question: if the recipe is the same — big data, self-supervise, adapt — **why do models differ?**
+Most language foundations still share the transformer family. Architecture matters most when the *job type* changes: text-only chat versus diffusion for images, or multimodal stacks.[9](https://www.ibm.com/think/topics/diffusion-models) Within chat models, the big splits are usually:
 
-For chat models, it is usually not a secret different brain. Most still use transformers. The real splits are:
+1. **Data mix** — how much code, math, dialogue, books, multilingual text, or images the model saw during pretraining (and continued training)  
+2. **Post-training** — instruction tuning, preference / RLHF-style training, domain fine-tunes; this steers how it writes, codes, refuses, and reasons  
+3. **Scale and training recipe** — parameter count, tokens seen, compute, designs such as mixture-of-experts  
+4. **Evaluation** — what you measure; a model can lead on coding and lag on long-form writing  
 
-1. **What they read** — more code, more math, more chat, more languages, more images  
-2. **How they were tuned after** — instructions, human preference training, domain fine-tunes  
-3. **How big the run was** — size, compute, training tricks  
-4. **What test you look at** — strong at coding, weaker at long essays, or the reverse  
+That last point is how you read the market without drowning. A **benchmark** is a fixed test for a skill. A high score means “strong on *this* skill,” not “best foundation model overall.”
 
-Architecture matters most when the *job type* changes — text chat versus image generation, for example.[9](https://www.ibm.com/think/topics/diffusion-models)
-
-So when you see a leaderboard, do not ask “who is best overall?” Ask: **what skill is this test measuring?** A high score means strong on *that* skill. Nothing more.
-
-| If you care about… | Look at… |
+| If you care about… | Look at signals like… |
 | --- | --- |
-| Chat people prefer | LMArena[14](https://lmarena.ai/) |
-| Coding | Coding arenas, SWE-bench-style tests |
-| Hard math / science | GPQA, MATH, contest math |
-| Text + images | MMMU and similar |
+| Chat / writing preference | LMArena (human A/B votes)[14](https://lmarena.ai/) |
+| Coding / agents | Coding arenas, SWE-bench-style suites |
+| Hard science / math | GPQA, MATH, contest math (e.g. AIME) |
+| Multimodal | MMMU and related vision–language suites |
 | Quality vs price vs speed | Artificial Analysis[15](https://artificialanalysis.ai/leaderboards/models) |
-| Open weights vs API only | AI Index / Hugging Face[13](https://hai.stanford.edu/ai-index/2025-ai-index-report/technical-performance)[12](https://huggingface.co/models) |
+| Open weights vs closed API | AI Index trends; Hugging Face hub[13](https://hai.stanford.edu/ai-index/2025-ai-index-report/technical-performance)[12](https://huggingface.co/models) |
 
-Here is that habit on a real chart. Same lab. Same era. Three models: GPT-4o, o1-preview, o1. Start with each panel title — that is the skill — not with “who won.”
+Worked example — how to read a chart. The 2025 AI Index reprints OpenAI’s comparison of GPT-4o, o1-preview, and o1. Do not start with “who won.” Start with the **panel title**: that is the skill under test.
 
 ![GPT-4o vs o1-preview vs o1 on select benchmarks](images/foundation-compare-by-benchmark.png)
 
-*Chart: 2025 AI Index (OpenAI, 2024).*[13](https://hai.stanford.edu/ai-index/2025-ai-index-report/technical-performance)
+*GPT-4o vs o1-preview vs o1. Chart: 2025 AI Index (OpenAI, 2024).*[13](https://hai.stanford.edu/ai-index/2025-ai-index-report/technical-performance)
 
-On general knowledge (**MMLU**), the bars are close (~88–92%). Look only there and they seem almost the same. On hard math and science (**MATH**, **GPQA**, **AIME**), the gap opens. On AIME, GPT-4o is about **9%**; o1 is about **74%**. Same family. Different strength. The benchmark told you *which part* got better.
+**MMLU** (broad general knowledge): bars sit close (~88–92%). Look only there and they seem almost the same. **MATH**, **GPQA Diamond** (hard science), and **AIME 2024** (contest math): the gap opens. On AIME, GPT-4o is about **9%**; o1 about **74%**. Same lab, same era; the benchmark shows *which capability* moved. Habit for any leaderboard: name the skill first, then trust the ranking for that skill only.
 
-Names you will keep meeting (versions change; the job of each line stays familiar):[2](https://blogs.nvidia.com/blog/what-are-foundation-models/)
+Families you will keep meeting (versions change; roles stay recognizable):[2](https://blogs.nvidia.com/blog/what-are-foundation-models/)
 
-| When | Family | Used for |
+| When | Family | Role |
 | --- | --- | --- |
-| 2018 | **BERT** | Search / language understanding[5](https://arxiv.org/abs/1810.04805) |
-| 2020 | **GPT-3** | Few-shot text APIs[6](https://arxiv.org/abs/2005.14165) |
-| 2022 | **Stable Diffusion**, **Whisper** | Images; speech-to-text |
-| 2022– | **GPT**, **Claude**, **Gemini** | Chat, coding, multimodal assistants |
-| 2023– | **Llama**, **Mistral**, **Qwen**, **DeepSeek**… | Open weights you can run / fine-tune[12](https://huggingface.co/models) |
-| Also | Code models; **AlphaFold**, **SAM**, … | Coding; science / vision |
+| 2018 | **BERT** | Pretrain + fine-tune for understanding / search[5](https://arxiv.org/abs/1810.04805) |
+| 2020 | **GPT-3** | Few-shot text; early API apps[6](https://arxiv.org/abs/2005.14165) |
+| 2022 | **Stable Diffusion**, **Whisper** | Text-to-image; speech-to-text |
+| 2022– | **GPT**, **Claude**, **Gemini** | Chat, coding help, multimodal assistants |
+| 2023– | **Llama**, **Mistral**, **Qwen**, **DeepSeek**… | Open-weight bases to deploy or fine-tune[12](https://huggingface.co/models) |
+| Also | Code models; **AlphaFold**, **SAM**, world models | Coding; science / vision / physical AI |
 
-None of this means “trust the base blindly.” Models invent facts (**hallucinate**), can carry bias, and cost real energy. If many products share one cracked foundation, they share the crack.[1](https://arxiv.org/abs/2108.07258)
+Major generations (GPT-3 → GPT-4 class) are usually new pretraining runs — new data, compute, and recipe — not “keep training the old checkpoint forever.” Inside a generation, a lot of product change is **post-training** on a related base.
 
-A foundation model is the base layer — not the product.
+Capability and failure arrive together. Models **hallucinate** (fluent but false), can amplify **bias** in the data, raise privacy and IP questions, and cost real energy. Homogenization means one cracked foundation can crack many products.[1](https://arxiv.org/abs/2108.07258) Grounding (e.g. RAG), filtering, red-teaming, and monitoring are part of using them — not optional polish.
 
-**Same idea. Different data and tuning. Different strengths. Pick by the job, then adapt.**
+A foundation model is not the product. It is the base layer.
+
+**Formal idea, plain takeaway:** trained on broad data with self-supervision at scale, then adapted to many downstream tasks — same recipe, different data and post-training, different strengths. Pick by the job and the matching benchmark, then adapt.
 
 ---
 
 ## Notes
 
-1. Bommasani et al., *On the Opportunities and Risks of Foundation Models* (Stanford CRFM / HAI, 2021). [arXiv](https://arxiv.org/abs/2108.07258) · [CRFM](https://crfm.stanford.edu/report.html)
+1. Bommasani et al., *On the Opportunities and Risks of Foundation Models* (Stanford CRFM / HAI, 2021). Formal definition + emergence / homogenization. [arXiv](https://arxiv.org/abs/2108.07258) · [CRFM](https://crfm.stanford.edu/report.html)
 2. NVIDIA, “What Are Foundation Models?” [Link](https://blogs.nvidia.com/blog/what-are-foundation-models/)
 3. IBM Think, “What are foundation models?” [Link](https://www.ibm.com/think/topics/foundation-models)
 4. Vaswani et al., *Attention Is All You Need* (2017). [arXiv](https://arxiv.org/abs/1706.03762)
 5. Devlin et al., *BERT* (2018). [arXiv](https://arxiv.org/abs/1810.04805)
 6. Brown et al., GPT-3 (2020). [arXiv](https://arxiv.org/abs/2005.14165)
 7. Stanford AI Index 2024. [Link](https://aiindex.stanford.edu/)
-8. Stanford AI Index 2024 — training-cost estimates (with Epoch AI). [Link](https://hai.stanford.edu/ai-index/2024-ai-index-report/research-and-development)
+8. Stanford AI Index 2024 — training-cost estimates (Epoch AI). [Link](https://hai.stanford.edu/ai-index/2024-ai-index-report/research-and-development)
 9. IBM Think, diffusion models. [Link](https://www.ibm.com/think/topics/diffusion-models)
 10. Lewis et al., RAG (2020). [arXiv](https://arxiv.org/abs/2005.11401)
 11. Hu et al., LoRA (2021). [arXiv](https://arxiv.org/abs/2106.09685)
