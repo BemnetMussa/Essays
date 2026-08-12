@@ -4,7 +4,7 @@
 
 *The apps are the road. The foundation model is what holds them up.*
 
-We experience AI today through the traffic on that road — ChatGPT, Claude, Gemini, coding copilots, image generators. Beneath it sits the infrastructure holding the traffic up: the **foundation model**. People use the phrase loosely, as if every neural network trained from scratch counted. It does not. **A foundation model is trained on broad data with self-supervision at scale and then adapted to many downstream tasks; models still differ mainly through data mix, post-training, scale, and evaluation — so you tell them apart by matching the job to the right benchmark, not by chasing a single overall winner.**
+We experience AI today through the traffic on that road — consumer interfaces like ChatGPT or the Claude web app, coding copilots, and image generators. Beneath them sits the infrastructure holding the traffic up: the **foundation models** themselves (like GPT-4o, Claude 3, or Gemini 1.5). People use the phrase loosely, as if every neural network trained from scratch counted. It does not. **A foundation model is trained on broad data with self-supervision at scale and then adapted to many downstream tasks; models still differ mainly through data mix, post-training, scale, and evaluation — so you tell them apart by matching the job to the right benchmark, not by chasing a single overall winner.**
 
 Stanford’s Center for Research on Foundation Models (CRFM) coined the term in 2021 and defined it this way:
 
